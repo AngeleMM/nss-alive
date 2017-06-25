@@ -4,6 +4,7 @@ import sqlite3 as db
 
 class QueryHandler:
     def __init__(self, db_name):
+        # self.table = ''
         self.conn = db.connect(db_name)
         self.sqlpath = './backend/setup-database.sql'
         with open(self.sqlpath, 'r') as sql:
@@ -22,17 +23,19 @@ class QueryHandler:
             self.make_str(e, 'red')
 
     def show(self,table):
-        table = table.split(' ')
-        if(table[0] == 'all'):
-            res = self.run('''SELECT name FROM
-   (SELECT * FROM sqlite_master UNION ALL
-    SELECT * FROM sqlite_temp_master)
-WHERE type='table'
-ORDER BY name''').fetchall()
-            res = ', '.join(''.join(val) for val in res)
-            self.make_str(res, 'white')
-        else:
-            self.get(table[0])
+        if table:
+            table = table.split(' ')
+            if(table[0] == 'all'):
+                res = self.run('''SELECT name FROM
+       (SELECT * FROM sqlite_master UNION ALL
+        SELECT * FROM sqlite_temp_master)
+    WHERE type='table'
+    ORDER BY name''').fetchall()
+                res = ', '.join(''.join(val) for val in res)
+                return self.make_str(res, 'white')
+            else:
+                return self.get(table[0])
+        self.get()
 
     def make_str(self,data,color):
         colors = {
@@ -49,23 +52,28 @@ ORDER BY name''').fetchall()
         string = '{}{}\033[0m'.format(colors[color],data)
         print(string)
 
-    def get(self,table):
+    def _get_(self,table):
+        query = 'PRAGMA table_info(`{}`)'.format(table)
+        res = self.run(query).fetchall()
+        self.cols = ''
+        for r in range(len(res)):
+            self.cols+='| {} '.format(res[r][1])
+        self.cols+='|'
+        data_query = '''SELECT * FROM {} '''.format(table)
+        data = self.run(data_query).fetchall()
+        self.ds = ''
+        for d in range(len(data)):
+            for s in range(len(data[d])):
+                self.ds+='| {} '.format(data[d][s])
+            self.ds+='|\n'
+
+    def get(self,table=''):
         try:
-            query = 'PRAGMA table_info(`{}`)'.format(table)
-            res = self.run(query).fetchall()
-            cols = ''
-            for r in range(len(res)):
-                cols+='| {} '.format(res[r][1])
-            cols+='|'
-            data_query = '''SELECT * FROM {} '''.format(table)
-            data = self.run(data_query).fetchall()
-            ds = ''
-            for d in range(len(data)):
-                for s in range(len(data[d])):
-                    ds+='| {} '.format(data[d][s])
-                ds+='|\n'
-            self.make_str(cols, 'green')
-            self.make_str(ds, 'green')
+            if not (table):
+                if not (self.table):
+                    self._get_(self.table)
+            self.make_str(self.cols, 'green')
+            self.make_str(self.ds, 'green')
         except Exception as e:
             self.make_str(e, 'red')
 
@@ -137,7 +145,6 @@ class Cpanel(cmd.Cmd):
         ''')
 
     def do_use_default(self,item):
-        # print(123)
         self.db.default()
 
     def emptyline(self):
@@ -155,6 +162,10 @@ class Cpanel(cmd.Cmd):
 
     def do_show(self, table):
         self.db.show(table)
+
+    def do_use(self, table):
+        self.db.table = table
+        print(self.db.table)
 
     def do_exit(self, args):
         answer = input(self.it)

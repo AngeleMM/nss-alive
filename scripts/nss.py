@@ -57,9 +57,14 @@ central_bank_guaranteed_usd
 '''
         for quarter in gov_records:
             data = gov_records[quarter]
-            params = (quarter, data[2], data[3], data[0], data[14], data[15], data[16])
+            params = (quarter,data[2],data[3],data[0],data[14],data[15],data[16])
             with self.conn:
                 self.cursor.execute(query, params)
+
+
+
+
+
 
 
 def produce_data(db_handle):
@@ -136,6 +141,14 @@ def process_excel(excel_files, db_handle):
     os.remove(temp_file)
 
 
+def outer(f):
+    def inner():
+        print('Inner func called')
+        f()
+    return inner
+
+
+
 @click.command()
 @click.option('--dbname', default='nss-alive.db', help='Path to the sqlite database')
 @click.option('--sources',
@@ -143,13 +156,18 @@ def process_excel(excel_files, db_handle):
               help=
               'Where we should source data from, '
               'can be ArmStat or Tax Service')
+def hello():
+    click.echo('hello')
+    
 def pipeline(dbname, sources):
-    '''Entry point of our program'''
-    print('Starting processing...{}\n'.format(str(sources)))
-    db_handle = QueryHandler(dbname)
-    (excel_files, pdf_files) = produce_data(db_handle)
-    process_excel(excel_files, db_handle)
+    print(dbname)
+    # '''Entry point of our program'''
+    # print('Starting processing...{}\n'.format(str(sources)))
+    # db_handle = QueryHandler(dbname)
+    # (excel_files, pdf_files) = produce_data(db_handle)
+    # process_excel(excel_files, db_handle)
 
 
 if __name__ == '__main__':
-    pipeline()
+    # pipeline()
+    hello()
