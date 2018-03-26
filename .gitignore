@@ -6,3 +6,5 @@ npm-debug.log
 *.db
 lib/*.js
 lib/components/*.js
+.idea/
+.vscode

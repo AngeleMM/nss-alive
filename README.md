@@ -83,3 +83,18 @@ Roughly:
 5. Front end `React` provides a skeletion as an application box,
    handling events, UX, etc.
 6. `d3` add the great UI effect of graphs that tell a story and narrative.
+
+# Dev Notes
+
+## Tmp Database For Dev Envirenment
+
+1. From `nss-live` directory run
+    ```
+    python3 scripts/cpanel.py
+    ```
+2. You will see the project cpanel, it should look like this `[iterate-hackerspace]>`, from there run  
+    ```
+    migrate_up
+    migrate_down
+    ```
+to fill database with some data or to clear it
